@@ -5,6 +5,7 @@ using Test_Assignment.contract.Response;
 using Test_Assignment.Data;
 using Test_Assignment.Email;
 using Test_Assignment.Model;
+using Test_Assignment.Repository;
 
 namespace Test_Assignment.Controllers
 {
@@ -12,12 +13,12 @@ namespace Test_Assignment.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private ApplicationDbContext _dbContext;
+        private IUserInformation _IUserServices;
         private ApiResponse response = new ApiResponse();
         private EmailSend emailSend = new EmailSend();
-        public UsersController(ApplicationDbContext dbContext)
+        public UsersController(IUserInformation IUserServices)
         {
-            this._dbContext = dbContext;   
+            this._IUserServices = IUserServices;   
         }
         [HttpPost]
         [Route("Registration")]
@@ -25,28 +26,12 @@ namespace Test_Assignment.Controllers
         {
             try
             {
-                _dbContext.Add(u);
-                _dbContext.SaveChanges();
-
+                _IUserServices.Registration(u);
                 response.Ok = true;
                 response.Massage = "User Create Successfully";
                 response.Status = 200;
                 response.Data = u;
-
-                string sentEmail = u.Email;
-
-                MailMessage mail = new MailMessage(sentEmail, emailSend.Email);
-                mail.Subject = emailSend.Subject;
-                mail.Body = emailSend.Body;
-
-                SmtpClient smtpClient = new SmtpClient("smtp.mailtrap.io");
-                smtpClient.Port = 25;
-                smtpClient.EnableSsl=true; 
-                smtpClient.Send(mail);
-
-
                 return Ok(response);
-
             }
             catch (Exception ex)
             {
@@ -62,22 +47,12 @@ namespace Test_Assignment.Controllers
         {
             try
             {
-                var Exist = _dbContext.UserInfo.Where(x => x.Email == email && x.Password == password);
-
-                if(Exist != null)
-                {
-                    response.Ok = true;
-                    response.Massage = "User Login Successfully";
-                    response.Status = 200;
-                    response.Data = email;
-
-                    return Ok(response);
-                }
-                else
-                {
-                    response.Ok = false;
-                }
-
+                _IUserServices.Login(email, password);
+                response.Ok = true;
+                response.Massage = "User Login Successfully";
+                response.Status = 200;
+                response.Data = email;
+                return Ok(response);
             }
             catch (Exception ex)
             {

@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using System.Transactions;
 using Test_Assignment.Data;
+using Test_Assignment.Repository;
+using Test_Assignment.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +11,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(option =>
 {
     option.UseSqlServer(builder.Configuration.GetConnectionString("Conn"));
 });
+
+builder.Services.AddScoped<IUserInformation, UserInformationServices>();
+builder.Services.AddScoped<IUserInfoDetailsCollections, UserInfoDetailsServices>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
